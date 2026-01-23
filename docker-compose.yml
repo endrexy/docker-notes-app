@@ -3,9 +3,12 @@ services:
     image: postgres:16-alpine
     container_name: todo-db
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_USER_FILE: /run/secrets/db_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
       POSTGRES_DB: mydb
+    secrets:
+      - db_user
+      - db_password
     volumes:
       - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
       - postgres_data:/var/lib/postgresql/data
@@ -13,6 +16,12 @@ services:
       - "5432:5432"
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$(cat /run/secrets/db_user) -d mydb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   adminer:
     image: adminer:latest
@@ -22,7 +31,14 @@ services:
     networks:
       - app-network
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "php", "-r", "if(file_get_contents('http://localhost:8080')) exit(0); else exit(1);"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
 networks:
   app-network:
@@ -30,3 +46,10 @@ networks:
 
 volumes:
   postgres_data:
+
+secrets:
+  db_user:
+    file: ./secrets/db_user.txt
+  db_password:
+    file: ./secrets/db_password.txt
+    
