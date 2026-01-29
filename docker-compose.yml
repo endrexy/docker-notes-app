@@ -27,7 +27,7 @@ services:
     image: adminer:latest
     container_name: todo-adminer
     ports:
-      - "8080:8080"
+      - "8081:8080"
     networks:
       - app-network
     depends_on:
@@ -39,6 +39,24 @@ services:
       timeout: 5s
       retries: 5
       start_period: 5s
+  
+  backend:
+    build: ./backend
+    container_name: todo-backend
+    secrets:
+      - db_user
+      - db_password
+    networks:
+      - app-network
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http:/localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 networks:
   app-network:

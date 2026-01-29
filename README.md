@@ -56,4 +56,30 @@
     - Restart database `docker compose start db`
     - Health checks recover `docker compose logs -f db`
     - After 10 seconds, both services return healthy state
+
+#### 2. **Flask API(Backend - Application Layer)**
+- [x] Create project structure
+- [x] Create ./backend/requirements.txt file  
+- [x] Create the ./backend/app.py 
+- [x] Create the Dockerfile 
+- [x] Add the backend service to the  docker-compose.yml in parent folder
+- [x] Build and start
+
+
+## Project Structure
+```text
+.
+├── backend
+│   ├── app.py
+│   ├── Dockerfile
+│   └── requirements.txt
+├── docker-compose.yml
+├── init-db.sql
+├── README.md
+└── secrets
+    ├── db_password.txt
+    └── db_user.txt
+```
+
+
  
