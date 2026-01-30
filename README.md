@@ -157,7 +157,8 @@
     - Open terminal in backend container `docker exec -it todo-backend sh`
     - Run `getent hosts db` - should return the container address of db(172.23.0.2      db)
     - Exit
-**-> How Docker DNS works***
+
+**-> How Docker DNS works**
     - Docker creates and embedded DNS server at 127.0.0.11 for each network
     - Containers on the same custom network can resolve each other by service name
     - The service name (db, backend) maps to the container's IP on the network
