@@ -46,6 +46,8 @@ services:
     secrets:
       - db_user
       - db_password
+    # ports:
+    #   - "5003:5000"  # add this to test backend from the cli locally 
     networks:
       - app-network
     depends_on:
