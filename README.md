@@ -8,12 +8,16 @@
 
 ## Project Structure
 ```text
-.
+..
 ├── backend
 │   ├── app.py
 │   ├── Dockerfile
 │   └── requirements.txt
 ├── docker-compose.yml
+├── frontend
+│   ├── app.py
+│   ├── Dockerfile
+│   └── requirements.txt
 ├── init-db.sql
 ├── README.md
 └── secrets
@@ -163,4 +167,61 @@
     - The service name (db, backend) maps to the container's IP on the network
     - This only works on custom networks - default bridge doesn't support DNS resolution
 
- 
+#### 3. **Frontend(NiceGUI)**
+- [x] Create ./frontend/requirements.txt file
+- [x] Create the ./frontend/app.py
+- [x] Create the Dockerfile
+- [x] Add the frontend service to the docker-compose.yml in parent folder
+- [x] Build and start
+#### 3.1. Test the frontend
+- [x] Update the project structure 
+- [x] Verify all services are healthy `docker compose ps`
+    Expected:
+    ```
+    NAME              STATUS            PORTS
+    todo-db           Up (healthy)      0.0.0.0:5432->5432/tcp
+    todo-backend      Up (healthy)      
+    todo-frontend     Up (healthy)      0.0.0.0:8080->8080/tcp
+    todo-adminer      Up                0.0.0.0:8081->8080/tcp
+    ```
+- [x] Verify frontend network connectivity 
+    - Test frontend is on the network
+    `docker network inspect docker-notes-app_app-network | grep -A 3 "Name"`
+    Should list the 4 services: todo-db, todo-backend, todo-frontend, todo-adminer
+    - Exec into frontend container `docker exec -it todo-frontend sh` 
+    - Test DNS resolution to backend `python -c "import socket; print(socket.gethostbyname('backend'))"`
+    Should return an IP like 127.23.0.x
+    - Test  HTTP connection to backend `python -c "import requests; r = requests.get('http://backend:5000/health'); print(r.json())"`
+    Should return `{'status': 'healthy'}`
+- [x] Test frontend in browser - go to `http://localhost:8080`
+    - Open backend logs in terminal `docker compose logs -f backend`     
+    - Add a note, modify status(checkmark), delete note in browser
+    - Verify backend logs in real time
+    Should see something like:
+    ```
+    "POST /api/todos HTTP/1.1" 201
+    "GET /api/todos HTTP/1.1" 200
+    "PUT /api/todos HTTP/1.1" 200
+    "GET /api/todos HTTP/1.1" 200
+    ```
+- [x] Test data persistance(full stack restart)
+    - Stop-start all containers(keep volumes)
+    ```
+    docker compose down
+    docker compose up -d
+    ```
+    Refresh browser at `http://localhost:8080`
+    State should be like before the containers were restarted
+- [x] Check resource usage `docker stats`
+- [x] Test all health endpoints
+    ```
+    # Frontend (browser accessible)
+    curl http://localhost:8080
+    
+    # Backend (internal, test from container)
+    docker exec todo-backend curl -f http://localhost:5000/health
+    
+    # Database (test via psql)
+    docker exec todo-db pg_isready -U myuser -d mydb
+    ```
+
